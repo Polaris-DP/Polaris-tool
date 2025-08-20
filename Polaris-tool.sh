@@ -21,16 +21,18 @@ show_main_menu() {
     echo -e "${GREEN}===========================================${NC}"
     echo -e "${GREEN}一键安装脚本管理工具 - 请选择您要安装的项目 ${NC}"
     echo -e "${GREEN}===========================================${NC}"
-    echo -e "${YELLOW}1. ${NC} 安装 ${CYAN}3x-ui${NC} (mhsanaei)"
+    echo -e "${YELLOW}1. ${NC} 安装 ${CYAN}3x-ui${NC} (MHSanaei)"
     echo -e "${YELLOW}2. ${NC} 安装 ${CYAN}x-ui${NC} (alireza0)"
     echo -e "${YELLOW}3. ${NC} 安装 ${CYAN}s-ui${NC} (alireza0)"
     echo -e "${YELLOW}4. ${NC} 安装 ${CYAN}sublinkX${NC} (Ggooaclok819)"
     echo -e "${YELLOW}5. ${NC} 安装 ${CYAN}Docker Engine${NC}"
     echo -e "${YELLOW}6. ${NC} 安装 ${CYAN}哆啦A梦面板${NC} (Docker部署)(bqlpfy)"
     echo -e "${YELLOW}7. ${NC} 安装 ${CYAN}NodePassDash${NC} (NodePassProject)"
+    echo -e "${YELLOW}8. ${NC} 安装 ${CYAN}realm转发${NC}"
+    echo -e "${YELLOW}9. ${NC} 安装 ${CYAN}Komari服务器监控${NC}(Komari Moniter)" 
     echo -e "${YELLOW}0. ${NC} 退出脚本"
     echo -e "${GREEN}===========================================${NC}"
-    echo -n -e "${BLUE}请输入您的选择 (0-7): ${NC}"
+    echo -n -e "${BLUE}请输入您的选择 (0-9): ${NC}"
 }
 
 # --- 统一的安装完成提示函数 ---
@@ -260,6 +262,159 @@ install_nodepass_dash() {
     done
 }
 
+# --- 函数：安装 realm 转发 ---
+install_realm_forwarder() {
+    echo -e "\n--- 开始安装 realm 转发 ---"
+    echo -e "${YELLOW}正在执行 realm 转发安装脚本...${NC}"
+    echo -e "${BLUE}执行命令: curl -L https://github.com/Polaris-DP/realm/releases/download/v1.0.0/realm.sh -o realm.sh && chmod +x realm.sh && ./realm.sh${NC}"
+    # 执行命令
+    curl -L https://github.com/Polaris-DP/realm/releases/download/v1.0.0/realm.sh -o realm.sh && \
+    chmod +x realm.sh && \
+    ./realm.sh
+    local install_status=$?
+    # realm 脚本本身会输出配置信息，无需额外提示用户记录具体内容
+    prompt_after_install "realm 转发" "安装成功后的提示信息" $install_status
+}
+
+# --- 函数：获取本机IP地址 (用于显示给用户) ---
+get_local_ip() {
+    # 尝试多种方式获取IP，优先使用 ifconfig 或 ip addr
+    # 如果系统没有这些，可能会回退到 curl ifconfig.me
+    local ip=""
+    if command -v ip &> /dev/null; then
+        ip=$(ip addr show | grep -E 'inet\b' | grep -v '127.0.0.1' | awk '{print $2}' | cut -d/ -f1 | head -n 1)
+    elif command -v ifconfig &> /dev/null; then
+        ip=$(ifconfig | grep -E 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | head -n 1)
+    fi
+    # 如果上述方法没找到，尝试通过外部服务获取外网IP
+    if [[ -z "$ip" ]]; then
+        echo -e "${YELLOW}⚠️ 无法直接获取本地IP，尝试获取外网IP...${NC}"
+        ip=$(curl -s ifconfig.me)
+    fi
+    echo "$ip"
+}
+# --- 函数：安装 Komari 快速安装 ---
+install_komari_quick() {
+    echo -e "\n--- 开始 Komari 快速安装 ---"
+    echo -e "${YELLOW}正在执行 Komari 官方快速安装脚本...${NC}"
+    echo -e "${BLUE}执行命令: curl -fsSL https://raw.githubusercontent.com/komari-monitor/komari/main/install-komari.sh -o install-komari.sh && chmod +x install-komari.sh && sudo ./install-komari.sh${NC}"
+    local script_temp_path="/tmp/install-komari.sh"
+    # 确保命令是按顺序执行并检查每一步的状态
+    local install_status=0
+    echo -e "${BLUE}1/3: 下载 install-komari.sh...${NC}"
+    curl -fsSL https://raw.githubusercontent.com/komari-monitor/komari/main/install-komari.sh -o "$script_temp_path"
+    if [ "$?" -ne 0 ]; then
+        echo -e "${RED}下载 Komari 安装脚本失败！${NC}"
+        install_status=1
+    fi
+    if [ "$install_status" -eq 0 ]; then
+        echo -e "${BLUE}2/3: 添加执行权限...${NC}"
+        chmod +x "$script_temp_path"
+        if [ "$?" -ne 0 ]; then
+            echo -e "${RED}添加执行权限失败！${NC}"
+            install_status=1
+        fi
+    fi
+    if [ "$install_status" -eq 0 ]; then
+        echo -e "${BLUE}3/3: 执行安装脚本...${NC}"
+        # 注意：这里使用 sudo，脚本可能会要求输入密码
+        sudo "$script_temp_path"
+        if [ "$?" -ne 0 ]; then
+            echo -e "${RED}Komari 快速安装脚本执行失败！${NC}"
+            install_status=1
+        fi
+    fi
+    if [ "$install_status" -eq 0 ]; then
+        echo -e "\n${GREEN}✅ Komari 快速安装脚本已执行完毕。${NC}"
+        echo -e "${YELLOW}查看默认账号和密码信息，请执行：${NC}"
+        echo -e "${CYAN}  cat /opt/komari/logs/komari.log | grep -i '管理面板地址'${NC}"
+        echo -e "${CYAN}或直接访问：http://本机IP:25774 (请将本机IP替换为您的服务器实际IP)${NC}"
+    fi
+    prompt_after_install "Komari (快速安装)" "管理面板地址及默认账号密码" $install_status
+}
+# --- 函数：安装 Komari Docker 部署 ---
+install_komari_docker() {
+    echo -e "\n--- 开始 Komari Docker 部署 ---"
+    echo -e "${YELLOW}正在执行 Komari Docker 部署...${NC}"
+    # Check for Docker (modified logic)
+    if ! command -v docker &> /dev/null; then
+        echo -e "${RED}!! 错误：Docker 命令未找到。请确保 Docker Engine 已安装 (选项 5) 并且当前用户已在 docker 用户组中（可能需要重新登录）。${NC}"
+        prompt_after_install "Komari (Docker部署)" "" 1 # 直接标记失败并退出
+        return
+    else
+        echo -e "${GREEN}✅ Docker 命令检查通过。${NC}"
+    fi
+    local install_status=0
+    echo -e "${BLUE}1/3: 创建数据目录 './data'...${NC}"
+    mkdir -p ./data
+    if [ "$?" -ne 0 ]; then
+        echo -e "${RED}创建数据目录失败！${NC}"
+        install_status=1
+    fi
+    if [ "$install_status" -eq 0 ]; then
+        echo -e "${BLUE}2/3: 运行 Docker 容器 'komari'...${NC}"
+        docker run -d \
+            -p 25774:25774 \
+            -v "$(pwd)/data:/app/data" \
+            --name komari \
+            ghcr.io/komari-monitor/komari:latest
+        if [ "$?" -ne 0 ]; then
+            echo -e "${RED}运行 Komari Docker 容器失败！请检查端口是否被占用或镜像是否可访问。${NC}"
+            install_status=1
+        fi
+    fi
+    if [ "$install_status" -eq 0 ]; then
+        echo -e "\n${GREEN}✅ Komari Docker 容器已启动。${NC}"
+        echo -e "${BLUE}3/3: 获取默认账号和密码...${NC}"
+        echo -e "${CYAN}请等待几秒钟确保服务启动，然后将显示默认密码...${NC}"
+        sleep 10 # 等待容器完全启动
+        docker logs --tail 20 komari
+        if [ "$?" -ne 0 ]; then
+            echo -e "${YELLOW}⚠️ 注意：未能直接读取 Komari 容器日志。您可能需要稍后手动执行 'docker logs komari' 查看默认账号和密码。${NC}"
+        fi
+        local local_ip=$(get_local_ip)
+        if [[ -n "$local_ip" ]]; then
+            echo -e "${GREEN}在浏览器中访问管理面板: ${CYAN}http://${local_ip}:25774${NC}"
+        else
+            echo -e "${GREEN}在浏览器中访问管理面板: ${CYAN}http://本机IP:25774${NC} (请将本机IP替换为您的服务器实际IP)${NC}"
+        fi
+        echo -e "${RED}请务必复制或记录上方输出的默认账号密码！${NC}"
+    fi
+    prompt_after_install "Komari (Docker部署)" "默认账号和密码，请查看 docker logs komari 输出" $install_status
+}
+# --- 函数：Komari 服务器监控子菜单及安装逻辑 ---
+install_komari_monitor() {
+    while true; do
+        echo -e "\n${GREEN}===========================================${NC}"
+        echo -e "${GREEN}   Komari 服务器监控 - 请选择部署方式 ${NC}"
+        echo -e "${GREEN}===========================================${NC}"
+        echo -e "${YELLOW}1. ${NC} 快速安装 (推荐初学者)"
+        echo -e "${YELLOW}2. ${NC} Docker 部署 (推荐 Docker 用户)"
+        echo -e "${YELLOW}0. ${NC} 返回主菜单"
+        echo -e "${GREEN}===========================================${NC}"
+        echo -n -e "${BLUE}请输入您的选择 (0-2): ${NC}"
+        read -r sub_choice
+        case "$sub_choice" in
+            1)
+                install_komari_quick
+                break # 完成子选项后返回主菜单
+                ;;
+            2)
+                install_komari_docker
+                break # 完成子选项后返回主菜单
+                ;;
+            0)
+                echo -e "${YELLOW}返回主菜单...${NC}"
+                break # 返回主菜单
+                ;;
+            *)
+                echo -e "${RED}无效的选择，请重新输入！${NC}"
+                read -p "按回车键继续..."
+                ;;
+        esac
+        echo "" # 子菜单选择后空行
+    done
+}
 
 # --- 主逻辑 ---
 main() {
@@ -277,6 +432,8 @@ main() {
             5) install_docker_engine ;;
             6) install_forward_panel ;;
             7) install_nodepass_dash ;;
+            8) install_realm_forwarder ;;
+            9) install_komari_monitor ;;
             0)
                 echo -e "${YELLOW}感谢使用，再见！${NC}"
                 exit 0
