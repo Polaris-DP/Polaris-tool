@@ -421,45 +421,6 @@ install_komari_monitor() {
 get_latest_mochi_theme_url() {
     local repo="svnmoe/komari-web-mochi"
     local api_url="https://api.github.com/repos/${repo}/releases/latest"
-    echo -e "${YELLOW}正在尝试从 GitHub 获取 Mochi 主题最新版本信息...${NC}"
-    # 使用 curl 获取 API 响应，并用 grep 和 cut 解析下载链接
-    local download_url=$(curl -s "$api_url" | \
-                         grep -Eo '"browser_download_url": *"[^"]*komari-theme-v[^"]*\.zip"' | \
-                         head -n 1 | \
-                         cut -d '"' -f 4)
-    if [[ -z "$download_url" ]]; then
-        echo -e "${RED}❌ 无法获取到 Mochi 主题的最新下载地址。${NC}"
-        echo -e "${YELLOW}请检查网络连接或 GitHub API 状态。将尝试使用硬编码地址。${NC}"
-        # 如果获取失败，回退到你提供的已知稳定版本地址
-        echo "https://github.com/svnmoe/komari-web-mochi/releases/download/v1.0.5-beta3/komari-theme-v25.08.18-998a51f.zip"
-    else
-        echo -e "${GREEN}✅ 获取到最新下载地址: ${CYAN}$download_url${NC}"
-        echo "$download_url"
-    fi
-}
-# 函数：安装 Mochi 主题 (非Docker部署)
-install_mochi_theme() {
-    echo -e "\n--- 开始安装 Mochi 主题 (非Docker部署) ---"
-    # 检查 Komari 目录是否存在，主题需要安装到 Komari 的数据目录下
-    local komari_data_dir="/opt/komari/data"
-    local theme_base_dir="${komari_data_dir}/theme"
-    local mochi_theme_dir="${theme_base_dir}/Mochi"
-    if [ ! -d "$komari_data_dir" ]; then
-        echo -e "${RED}❌ 错误：Komari 安装目录 ${komari_data_dir} 不存在。${NC}"
-        echo -e "${YELLOW}请先安装 Komari 服务器监控（选项1或2），然后再尝试安装主题。${NC}"
-        return 1
-    fi
-    echo -e "${BLUE}1/4: 准备主题安装目录...${NC}"
-    # 创建主题目录，如果不存在
-    sudo mkdir -p "$mochi_theme_dir"
-    if [ "$?" -ne 0 ]; then
-        echo -e "${RED}❌ 创建目标目录 ${mochi_theme_dir} 失败！${NC}"
-        return 1
-    fi
-    # 函数：获取 Mochi 主题最新发布下载链接
-get_latest_mochi_theme_url() {
-    local repo="svnmoe/komari-web-mochi"
-    local api_url="https://api.github.com/repos/${repo}/releases/latest"
 
     echo -e "${YELLOW}正在尝试从 GitHub 获取 Mochi 主题最新版本信息...${NC}"
     # 使用 curl 获取 API 响应，并用 grep 和 cut 解析下载链接
