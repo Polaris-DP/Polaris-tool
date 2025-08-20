@@ -324,15 +324,7 @@ install_komari_quick() {
     fi
     # 在这里添加获取和显示账号密码的代码
     if [ "$install_status" -eq 0 ]; then
-        echo -e "${YELLOW}🔑 正在尝试获取管理面板的初始账号和密码...${NC}"
-        # 直接尝试读取日志，不等待，不循环，简单粗暴
-        password_info=$(sudo journalctl -u komari --no-pager -n 500 2>/dev/null | grep -Ei 'Username:|Password:' | head -n 2)
-        if [[ -n "$password_info" ]]; then
-            echo -e "${GREEN}✅ 初始账号和密码信息如下:${NC}"
-            echo -e "${CYAN}$password_info${NC}"
-        else
-            echo -e "${RED}❌ 未能自动获取到初始账号和密码。${NC}"
-            echo -e "${YELLOW}请尝试手动执行以下命令获取：${NC}"
+            echo -e "${YELLOW}如果未能自动获取初始账号、密码。请尝试手动执行以下命令获取：${NC}"
             echo -e "${CYAN}  sudo journalctl -u komari --no-pager -n 200 | grep -Ei 'Username|Password'${NC}"
         fi
     fi
