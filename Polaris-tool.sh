@@ -417,31 +417,21 @@ install_komari_monitor() {
     done
 }
 
-# 函数：获取 Mochi 主题最新发布下载链接
-get_latest_mochi_theme_url() {
-    # 不再尝试从 GitHub API 获取，直接使用硬编码的固定链接
-    # 注意：如果未来的版本有更新，这个链接将不会自动更新。
-    local fixed_url="https://github.com/svnmoe/komari-web-mochi/releases/download/v1.0.5-beta3/komari-theme-v25.08.18-998a51f.zip"
-    
-    echo -e "${YELLOW}使用固定链接下载 Mochi 主题：${CYAN}$fixed_url${NC}"
-    echo "$fixed_url"
-}
-
 # 函数：安装 Mochi 主题 (非Docker部署)
 install_mochi_theme() {
     echo -e "\n--- 开始安装 Mochi 主题 (非Docker部署) ---"
-
     # 检查 Komari 目录是否存在，主题需要安装到 Komari 的数据目录下
     local komari_data_dir="/opt/komari/data"
     local theme_base_dir="${komari_data_dir}/theme"
     local mochi_theme_dir="${theme_base_dir}/mochi" # 建议使用小写，避免跨平台问题或路径不一致
-
+    # 定义要下载的固定主题链接
+    local theme_download_url="https://github.com/svnmoe/komari-web-mochi/releases/download/v1.0.5-beta3/komari-theme-v25.08.18-998a51f.zip"
+    local temp_zip_file="/tmp/mochi_theme.zip"
     if [ ! -d "$komari_data_dir" ]; then
         echo -e "${RED}❌ 错误：Komari 安装目录 ${komari_data_dir} 不存在。${NC}"
         echo -e "${YELLOW}请先安装 Komari 服务器监控（选项1或2），然后再尝试安装主题。${NC}"
         return 1
     fi
-
     echo -e "${BLUE}1/4: 准备主题安装目录...${NC}"
     # 创建主题目录，如果不存在
     sudo mkdir -p "$mochi_theme_dir"
@@ -449,28 +439,33 @@ install_mochi_theme() {
         echo -e "${RED}❌ 创建目标目录 ${mochi_theme_dir} 失败！${NC}"
         return 1
     fi
-
-    # 获取下载链接（现在将是固定链接）
-    local theme_download_url=$(get_latest_mochi_theme_url)
-    if [[ -z "$theme_download_url" ]]; then # 理论上这里不会为空了，因为已经硬编码
-        echo -e "${RED}❌ 无法获取主题下载链接，安装终止。${NC}"
-        return 1
+    echo -e "${BLUE}2/4: 下载主题文件 (${CYAN}$theme_download_url${BLUE})...${NC}"
+    # 检查 wget 命令是否存在，如果不存在则尝试安装
+    if ! command -v wget &> /dev/null; then
+        echo -e "${YELLOW}警告：wget 命令未找到，正在尝试安装...${NC}"
+        if command -v apt-get &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y wget
+        elif command -v yum &> /dev/null; then
+            sudo yum install -y wget
+        elif command -v dnf &> /dev/null; then
+            sudo dnf install -y wget
+        else
+            echo -e "${RED}❌ 无法安装 wget，请手动安装后重试。${NC}"
+            return 1
+        fi
     fi
-
-    local temp_zip_file="/tmp/mochi_theme.zip"
-    echo -e "${BLUE}2/4: 下载主题文件...${NC}"
-    # 下载主题文件
-    curl -L --fail --output "$temp_zip_file" "$theme_download_url" # -L 跟随重定向，--fail 失败时返回非零退出码
+    # 使用 wget 下载主题文件
+    sudo wget -q --show-progress -O "$temp_zip_file" "$theme_download_url"
     if [ "$?" -ne 0 ]; then
         echo -e "${RED}❌ 主题文件下载失败！请检查链接或网络。${NC}"
         rm -f "$temp_zip_file" # 清理临时文件
         return 1
     fi
-
     echo -e "${BLUE}3/4: 解压主题文件到 ${mochi_theme_dir} ...${NC}"
     # 清理旧主题文件，确保全新解压
     sudo rm -rf "${mochi_theme_dir}/*" # 清理旧内容
-    # 解压 zip 文件到目标目录
+    
+    # 检查 unzip 命令是否存在，如果不存在则尝试安装
     if ! command -v unzip &> /dev/null; then
         echo -e "${YELLOW}警告：unzip 命令未找到，正在尝试安装...${NC}"
         if command -v apt-get &> /dev/null; then
@@ -485,21 +480,17 @@ install_mochi_theme() {
             return 1
         fi
     fi
-
     sudo unzip -o "$temp_zip_file" -d "$mochi_theme_dir"
     if [ "$?" -ne 0 ]; then
         echo -e "${RED}❌ 主题文件解压失败！${NC}"
         rm -f "$temp_zip_file" # 清理临时文件
         return 1
     fi
-
     echo -e "${BLUE}4/4: 清理临时文件...${NC}"
     rm -f "$temp_zip_file"
-
     echo -e "${GREEN}✅ Mochi 主题安装成功！${NC}"
     echo -e "${YELLOW}您可能需要重启 Komari 服务或刷新管理页面以使主题生效。${NC}"
     echo -e "${CYAN}  重启 Komari 命令：sudo systemctl restart komari${NC}"
-
     echo -e "----------------------------------------"
 }
 
