@@ -96,7 +96,7 @@ install_docker_engine() {
     echo -e "${YELLOW}正在安装 Docker Engine...${NC}"
     echo -e "${BLUE}执行命令: curl -fsSL https://raw.githubusercontent.com/Polaris-DP/Polaris-tool/refs/heads/main/docker-engine-install.sh | bash${NC}"
     curl -fsSL https://raw.githubusercontent.com/Polaris-DP/Polaris-tool/refs/heads/main/docker-engine-install.sh | bash
-    prompt_after_install "Docker Engine" "安装完成" $?
+    prompt_after_install "Docker Engine" "" $?
 }
 
 # --- 函数：安装 哆啦A梦中转面板 ---
