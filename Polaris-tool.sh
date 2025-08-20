@@ -419,25 +419,12 @@ install_komari_monitor() {
 
 # 函数：获取 Mochi 主题最新发布下载链接
 get_latest_mochi_theme_url() {
-    local repo="svnmoe/komari-web-mochi"
-    local api_url="https://api.github.com/repos/${repo}/releases/latest"
-
-    echo -e "${YELLOW}正在尝试从 GitHub 获取 Mochi 主题最新版本信息...${NC}"
-    # 使用 curl 获取 API 响应，并用 grep 和 cut 解析下载链接
-    local download_url=$(curl -s "$api_url" | \
-                         grep -Eo '"browser_download_url": *"[^"]*komari-theme-v[^"]*\.zip"' | \
-                         head -n 1 | \
-                         cut -d '"' -f 4)
-
-    if [[ -z "$download_url" ]]; then
-        echo -e "${RED}❌ 无法获取到 Mochi 主题的最新下载地址。${NC}"
-        echo -e "${YELLOW}请检查网络连接或 GitHub API 状态。将尝试使用硬编码地址。${NC}"
-        # 如果获取失败，回退到你提供的已知稳定版本地址
-        echo "https://github.com/svnmoe/komari-web-mochi/releases/download/v1.0.5-beta3/komari-theme-v25.08.18-998a51f.zip"
-    else
-        echo -e "${GREEN}✅ 获取到最新下载地址: ${CYAN}$download_url${NC}"
-        echo "$download_url"
-    fi
+    # 不再尝试从 GitHub API 获取，直接使用硬编码的固定链接
+    # 注意：如果未来的版本有更新，这个链接将不会自动更新。
+    local fixed_url="https://github.com/svnmoe/komari-web-mochi/releases/download/v1.0.5-beta3/komari-theme-v25.08.18-998a51f.zip"
+    
+    echo -e "${YELLOW}使用固定链接下载 Mochi 主题：${CYAN}$fixed_url${NC}"
+    echo "$fixed_url"
 }
 
 # 函数：安装 Mochi 主题 (非Docker部署)
@@ -447,7 +434,7 @@ install_mochi_theme() {
     # 检查 Komari 目录是否存在，主题需要安装到 Komari 的数据目录下
     local komari_data_dir="/opt/komari/data"
     local theme_base_dir="${komari_data_dir}/theme"
-    local mochi_theme_dir="${theme_base_dir}/mochi"
+    local mochi_theme_dir="${theme_base_dir}/mochi" # 建议使用小写，避免跨平台问题或路径不一致
 
     if [ ! -d "$komari_data_dir" ]; then
         echo -e "${RED}❌ 错误：Komari 安装目录 ${komari_data_dir} 不存在。${NC}"
@@ -463,9 +450,9 @@ install_mochi_theme() {
         return 1
     fi
 
-    # 获取最新下载链接
+    # 获取下载链接（现在将是固定链接）
     local theme_download_url=$(get_latest_mochi_theme_url)
-    if [[ -z "$theme_download_url" ]]; then
+    if [[ -z "$theme_download_url" ]]; then # 理论上这里不会为空了，因为已经硬编码
         echo -e "${RED}❌ 无法获取主题下载链接，安装终止。${NC}"
         return 1
     fi
