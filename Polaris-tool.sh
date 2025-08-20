@@ -423,7 +423,7 @@ install_mochi_theme() {
     # 检查 Komari 目录是否存在，主题需要安装到 Komari 的数据目录下
     local komari_data_dir="/opt/komari/data"
     local theme_base_dir="${komari_data_dir}/theme"
-    local mochi_theme_dir="${theme_base_dir}/mochi" # 建议使用小写，避免跨平台问题或路径不一致
+    local mochi_theme_dir="${theme_base_dir}/Mochi"
     # 定义要下载的固定主题链接
     local theme_download_url="https://github.com/svnmoe/komari-web-mochi/releases/download/v1.0.5-beta3/komari-theme-v25.08.18-998a51f.zip"
     local temp_zip_file="/tmp/mochi_theme.zip"
