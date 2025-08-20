@@ -34,7 +34,7 @@ log_error() {
 check_command_status() {
     if [ $? -ne 0 ]; then
         log_error "$1 失败。脚本退出。"
-        read -p "按任意键退出..."
+        read -p "按回车键退出..."
         exit 1
     fi
 }
@@ -53,7 +53,7 @@ ensure_sudo() {
             check_command_status "安装 sudo"
         else
             log_error "无法自动安装 'sudo'。请手动安装 'sudo' 或以 root 用户运行脚本。"
-            read -p "按任意键退出..."
+            read -p "按回车键退出..."
             exit 1
         fi
         log_success "'sudo' 命令已安装。"
@@ -282,7 +282,7 @@ main() {
     fi
 
     echo -e "${GREEN}------------------------------------------${NC}"
-    read -p "按任意键退出安装脚本..."
+    read -p "按回车键退出安装脚本..."
     exit $install_status
 }
 
