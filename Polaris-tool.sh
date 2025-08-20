@@ -28,7 +28,7 @@ show_main_menu() {
     echo -e "${YELLOW}5. ${NC} 安装 ${CYAN}Docker Engine${NC}"
     echo -e "${YELLOW}6. ${NC} 安装 ${CYAN}哆啦A梦面板${NC} (Docker部署)(bqlpfy)"
     echo -e "${YELLOW}7. ${NC} 安装 ${CYAN}NodePassDash${NC} (NodePassProject)"
-    echo -e "${YELLOW}8. ${NC} 安装 ${CYAN}realm转发${NC}"
+    echo -e "${YELLOW}8. ${NC} 执行 ${CYAN}realm转发${NC}脚本"
     echo -e "${YELLOW}9. ${NC} 安装 ${CYAN}Komari服务器监控${NC}(Komari Moniter)" 
     echo -e "${YELLOW}0. ${NC} 退出脚本"
     echo -e "${GREEN}===========================================${NC}"
@@ -262,10 +262,10 @@ install_nodepass_dash() {
     done
 }
 
-# --- 函数：安装 realm 转发 ---
+# --- 函数：realm 转发 ---
 install_realm_forwarder() {
-    echo -e "\n--- 开始安装 realm 转发 ---"
-    echo -e "${YELLOW}正在执行 realm 转发安装脚本...${NC}"
+    echo -e "\n--- 开始执行 realm 转发脚本 ---"
+    echo -e "${YELLOW}正在执行 realm 转发脚本...${NC}"
     echo -e "${BLUE}执行命令: curl -L https://github.com/Polaris-DP/realm/releases/download/v1.0.0/realm.sh -o realm.sh && chmod +x realm.sh && ./realm.sh${NC}"
     # 执行命令
     curl -L https://github.com/Polaris-DP/realm/releases/download/v1.0.0/realm.sh -o realm.sh && \
