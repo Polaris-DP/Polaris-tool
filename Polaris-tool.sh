@@ -318,11 +318,13 @@ install_komari_quick() {
         # 注意：这里使用 sudo，脚本可能会要求输入密码
         sudo "$script_temp_path"
         if [ "$?" -ne 0 ]; then
-            echo -e "${RED}Komari 快捷脚本执行失败！${NC}"
+            echo -e "${RED}Komari 快捷安装脚本执行失败！${NC}"
             install_status=1
         fi
     fi
-
+    if [ "$install_status" -eq 0 ]; then
+        echo -e "${CYAN}在浏览器中访问管理面板：http://本机IP:端口号 ${NC}"
+    fi
 }
 # --- 函数：安装 Komari Docker 部署 ---
 install_komari_docker() {
