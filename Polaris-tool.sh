@@ -28,7 +28,7 @@ show_main_menu() {
     echo -e "${YELLOW}5. ${NC} 安装 ${CYAN}Docker Engine${NC}"
     echo -e "${YELLOW}6. ${NC} 安装 ${CYAN}哆啦A梦面板${NC} (Docker部署)(bqlpfy)"
     echo -e "${YELLOW}7. ${NC} 安装 ${CYAN}NodePassDash${NC} (NodePassProject)"
-    echo -e "${YELLOW}8. ${NC} 执行 ${CYAN}realm转发${NC}脚本"
+    echo -e "${YELLOW}8. ${NC} 执行 ${CYAN}realm${NC} 转发脚本"
     echo -e "${YELLOW}9. ${NC} 安装 ${CYAN}Komari服务器监控${NC}(Komari Moniter)" 
     echo -e "${YELLOW}0. ${NC} 退出脚本"
     echo -e "${GREEN}===========================================${NC}"
@@ -294,7 +294,7 @@ get_local_ip() {
 # --- 函数：安装 Komari 快速安装 ---
 install_komari_quick() {
     echo -e "\n--- 开始 Komari 快速安装 ---"
-    echo -e "${YELLOW}正在执行 Komari 官方快速安装脚本...${NC}"
+    echo -e "${YELLOW}正在执行 Komari 快捷脚本...${NC}"
     echo -e "${BLUE}执行命令: curl -fsSL https://raw.githubusercontent.com/komari-monitor/komari/main/install-komari.sh -o install-komari.sh && chmod +x install-komari.sh && sudo ./install-komari.sh${NC}"
     local script_temp_path="/tmp/install-komari.sh"
     # 确保命令是按顺序执行并检查每一步的状态
@@ -302,7 +302,7 @@ install_komari_quick() {
     echo -e "${BLUE}1/3: 下载 install-komari.sh...${NC}"
     curl -fsSL https://raw.githubusercontent.com/komari-monitor/komari/main/install-komari.sh -o "$script_temp_path"
     if [ "$?" -ne 0 ]; then
-        echo -e "${RED}下载 Komari 安装脚本失败！${NC}"
+        echo -e "${RED}下载 Komari 快捷脚本失败！${NC}"
         install_status=1
     fi
     if [ "$install_status" -eq 0 ]; then
@@ -314,21 +314,15 @@ install_komari_quick() {
         fi
     fi
     if [ "$install_status" -eq 0 ]; then
-        echo -e "${BLUE}3/3: 执行安装脚本...${NC}"
+        echo -e "${BLUE}3/3: 执行快捷脚本...${NC}"
         # 注意：这里使用 sudo，脚本可能会要求输入密码
         sudo "$script_temp_path"
         if [ "$?" -ne 0 ]; then
-            echo -e "${RED}Komari 快速安装脚本执行失败！${NC}"
+            echo -e "${RED}Komari 快捷脚本执行失败！${NC}"
             install_status=1
         fi
     fi
-    if [ "$install_status" -eq 0 ]; then
-        echo -e "\n${GREEN}✅ Komari 快速安装脚本已执行完毕。${NC}"
-        echo -e "${YELLOW}查看默认账号和密码信息，请执行：${NC}"
-        echo -e "${CYAN}  cat /opt/komari/logs/komari.log | grep -i '管理面板地址'${NC}"
-        echo -e "${CYAN}或直接访问：http://本机IP:25774 (请将本机IP替换为您的服务器实际IP)${NC}"
-    fi
-    prompt_after_install "Komari (快速安装)" "管理面板地址及默认账号密码" $install_status
+
 }
 # --- 函数：安装 Komari Docker 部署 ---
 install_komari_docker() {
