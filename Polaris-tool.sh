@@ -272,8 +272,6 @@ install_realm_forwarder() {
     chmod +x realm.sh && \
     ./realm.sh
     local install_status=$?
-    # realm 脚本本身会输出配置信息，无需额外提示用户记录具体内容
-    prompt_after_install "realm 转发" "安装成功后的提示信息" $install_status
 }
 
 # --- 函数：获取本机IP地址 (用于显示给用户) ---
